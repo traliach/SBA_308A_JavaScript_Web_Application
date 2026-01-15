@@ -81,6 +81,7 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
             <img src="${item.imageUrl}" class="card-img-top" alt="${item.title}" />
             <div class="card-body d-flex flex-column">
               <h3 class="h6 card-title">${item.title}</h3>
+              ${item.status ? `<span class="badge text-bg-secondary mb-2">${item.status}</span>` : ""}
               <p class="small text-muted mb-3">
                 Year: ${item.year ?? "N/A"} · Score: ${item.score ?? "N/A"}
               </p>
@@ -146,7 +147,7 @@ if (resultsGrid) {
     const item = findById(state.results, button.dataset.id);
     if (!item || findById(state.saved, item.id)) return;
 
-    state.saved = [...state.saved, item];
+    state.saved = [...state.saved, { ...item, status: "Planned" }];
     setSavedList(state.saved);
     render();
     showStatus("Saved to My List.", "success");
