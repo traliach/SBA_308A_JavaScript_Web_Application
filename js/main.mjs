@@ -121,6 +121,7 @@ if (form) {
     if (!query) return;
 
     const requestId = ++lastRequestId;
+    showStatus("Searching...", "info");
 
     try {
       const results = await searchManga({ q: query, page: 1, limit: 9 });
