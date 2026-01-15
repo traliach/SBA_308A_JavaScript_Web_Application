@@ -174,6 +174,15 @@ if (form) {
   });
 }
 
+if (searchInput && form) {
+  searchInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  });
+}
+
 if (clearBtn) {
   clearBtn.addEventListener("click", () => {
     searchInput.value = "";
