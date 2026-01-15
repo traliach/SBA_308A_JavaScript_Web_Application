@@ -87,6 +87,32 @@
       </section>
     </main>
 
+    <div
+      class="offcanvas offcanvas-end"
+      tabindex="-1"
+      id="details-offcanvas"
+      aria-labelledby="details-title"
+    >
+      <div class="offcanvas-header">
+        <h2 class="offcanvas-title h5 mb-0" id="details-title">Manga Details</h2>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="offcanvas-body">
+        <div id="details-body" class="text-muted">
+          Click a manga card to see details.
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      defer
+    ></script>
     <script type="module" src="js/main.mjs"></script>
   </body>
 </html>

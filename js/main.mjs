@@ -1,4 +1,4 @@
-import { searchManga } from "./api/jikan.mjs";
+import { getMangaById, searchManga } from "./api/jikan.mjs";
 import { getSavedList, setSavedList } from "./storage.mjs";
 
 console.log("Manga Hub booted");
@@ -17,6 +17,8 @@ const loadingPercent = document.getElementById("loading-percent");
 const prevBtn = document.getElementById("prev-btn");
 const nextBtn = document.getElementById("next-btn");
 const pageIndicator = document.getElementById("page-indicator");
+const detailsOffcanvasEl = document.getElementById("details-offcanvas");
+const detailsBody = document.getElementById("details-body");
 
 const state = {
   results: [],
@@ -150,7 +152,7 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
     .map(
       (item) => `
         <div class="col-12 col-sm-6 col-lg-4">
-          <div class="card h-100 shadow-sm">
+          <div class="card h-100 shadow-sm" data-manga-id="${item.id}">
             <img src="${item.imageUrl}" class="card-img-top" alt="${item.title}" />
             <div class="card-body d-flex flex-column">
               <h3 class="h6 card-title">${item.title}</h3>
@@ -194,6 +196,34 @@ const render = () => {
 };
 
 const findById = (list, id) => list.find((item) => item.id === id);
+
+const renderDetails = (details) => {
+  if (!detailsBody) return;
+  const genres = details.genres?.length ? details.genres.join(", ") : "N/A";
+  detailsBody.innerHTML = `
+    <div class="d-flex gap-3">
+      ${
+        details.imageUrl
+          ? `<img src="${details.imageUrl}" alt="${details.title}" style="width:120px;height:auto;border-radius:8px;" />`
+          : ""
+      }
+      <div>
+        <h3 class="h6 mb-2">${details.title}</h3>
+        <div class="small text-muted mb-2">
+          Score: ${details.score} · Status: ${details.status}
+        </div>
+        <div class="small text-muted mb-2">
+          Chapters: ${details.chapters} · Volumes: ${details.volumes}
+        </div>
+        <div class="small text-muted mb-3">
+          Genres: ${genres}
+        </div>
+      </div>
+    </div>
+    <hr />
+    <p class="mb-0">${details.synopsis}</p>
+  `;
+};
 
 if (form) {
   form.addEventListener("submit", async (event) => {
@@ -241,6 +271,33 @@ if (nextBtn) {
 }
 
 if (resultsGrid) {
+  resultsGrid.addEventListener("click", async (event) => {
+    const saveBtn = event.target.closest("[data-action='save']");
+    if (saveBtn) return;
+
+    const card = event.target.closest("[data-manga-id]");
+    if (!card) return;
+
+    const mangaId = card.dataset.mangaId;
+    if (!mangaId) return;
+
+    try {
+      showStatus("Loading details...", "info");
+      startLoading();
+      const details = await getMangaById(mangaId);
+      renderDetails(details);
+
+      if (detailsOffcanvasEl && window.bootstrap?.Offcanvas) {
+        window.bootstrap.Offcanvas.getOrCreateInstance(detailsOffcanvasEl).show();
+      }
+    } catch (error) {
+      console.error(error);
+      showStatus("Details failed. Try again.", "warning");
+    } finally {
+      finishLoading();
+    }
+  });
+
   resultsGrid.addEventListener("click", (event) => {
     const button = event.target.closest("[data-action='save']");
     if (!button) return;
