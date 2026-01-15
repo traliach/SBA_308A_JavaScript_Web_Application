@@ -1,5 +1,5 @@
 import { searchManga } from "./api/jikan.mjs";
-import { getSavedList } from "./storage.mjs";
+import { getSavedList, setSavedList } from "./storage.mjs";
 
 console.log("Manga Hub booted ✅");
 
@@ -174,15 +174,10 @@ if (resultsGrid) {
     const item = findById(state.results, button.dataset.id);
     if (!item || findById(state.saved, item.id)) return;
 
-    try {
-      const savedItem = await saveToCrudCrud(item);
-      state.saved = [...state.saved, savedItem];
-      render();
-      showStatus("Saved to My List.", "success");
-    } catch (error) {
-      console.error(error);
-      showStatus("Save failed. Try again.", "danger");
-    }
+    state.saved = [...state.saved, item];
+    setSavedList(state.saved);
+    render();
+    showStatus("Saved to My List.", "success");
   });
 }
 
@@ -196,17 +191,12 @@ if (savedGrid) {
     );
     if (!item) return;
 
-    try {
-      await removeFromCrudCrud(item.crudId);
-      state.saved = state.saved.filter(
-        (savedItem) => savedItem.crudId !== item.crudId
-      );
-      render();
-      showStatus("Removed from My List.", "secondary");
-    } catch (error) {
-      console.error(error);
-      showStatus("Remove failed. Try again.", "danger");
-    }
+    state.saved = state.saved.filter(
+      (savedItem) => savedItem.id !== item.id
+    );
+    setSavedList(state.saved);
+    render();
+    showStatus("Removed from My List.", "secondary");
   });
 }
 
