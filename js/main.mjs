@@ -1,4 +1,4 @@
-import { CRUDCRUD_BASE } from "./config.mjs";
+import { searchManga } from "./api/jikan.mjs";
 
 console.log("Manga Hub booted ✅");
 
@@ -9,6 +9,7 @@ const resultsGrid = document.getElementById("results-grid");
 const savedGrid = document.getElementById("saved-grid");
 const resultsCount = document.getElementById("results-count");
 const savedCount = document.getElementById("saved-count");
+const statusEl = document.getElementById("status");
 
 const state = {
   results: [],
@@ -44,23 +45,6 @@ const mockResults = [
   },
 ];
 
-const toCardItem = (item) => ({
-  id: String(item.mal_id),
-  title: item.title,
-  year: item.year ?? "N/A",
-  score: item.score ?? "N/A",
-  imageUrl: item.images?.jpg?.image_url ?? "https://placehold.co/300x420?text=No+Image",
-});
-
-const fetchJikanResults = async (query) => {
-  const url = `https://api.jikan.moe/v4/manga?q=${encodeURIComponent(query)}&limit=9`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error("Jikan request failed");
-  }
-  const data = await response.json();
-  return (data.data ?? []).map(toCardItem);
-};
 
 const loadSaved = async () => {
   if (!SAVED_ENDPOINT) {
@@ -111,6 +95,17 @@ const renderEmpty = (grid, message) => {
       <div class="alert alert-light mb-0">${message}</div>
     </div>
   `;
+};
+
+const showStatus = (message, type = "info") => {
+  if (!statusEl) return;
+  statusEl.textContent = message;
+  statusEl.className = `alert alert-${type}`;
+  statusEl.classList.remove("d-none");
+  window.clearTimeout(showStatus.timerId);
+  showStatus.timerId = window.setTimeout(() => {
+    statusEl.classList.add("d-none");
+  }, 2500);
 };
 
 const renderGrid = (grid, items, actionLabel, actionName) => {
@@ -165,11 +160,12 @@ if (form) {
     if (!query) return;
 
     try {
-      state.results = await fetchJikanResults(query);
+      state.results = await searchManga({ q: query, page: 1, limit: 9 });
     } catch (error) {
       console.error(error);
       state.results = [];
       renderEmpty(resultsGrid, "Search failed. Try again.");
+      showStatus("Search failed. Try again.", "warning");
     }
     render();
   });
@@ -195,8 +191,10 @@ if (resultsGrid) {
       const savedItem = await saveToCrudCrud(item);
       state.saved = [...state.saved, savedItem];
       render();
+      showStatus("Saved to My List.", "success");
     } catch (error) {
       console.error(error);
+      showStatus("Save failed. Try again.", "danger");
     }
   });
 }
@@ -217,8 +215,10 @@ if (savedGrid) {
         (savedItem) => savedItem.crudId !== item.crudId
       );
       render();
+      showStatus("Removed from My List.", "secondary");
     } catch (error) {
       console.error(error);
+      showStatus("Remove failed. Try again.", "danger");
     }
   });
 }
@@ -226,6 +226,7 @@ if (savedGrid) {
 loadSaved()
   .catch((error) => {
     console.error(error);
+    showStatus("Failed to load saved list.", "warning");
   })
   .finally(() => {
     render();
