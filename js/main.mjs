@@ -17,6 +17,7 @@ const state = {
   saved: [],
 };
 
+let lastRequestId = 0;
 
 // Temporary mock data for UI wiring (replace with API results later)
 const mockResults = [
@@ -119,10 +120,15 @@ if (form) {
     const query = searchInput.value.trim();
     if (!query) return;
 
+    const requestId = ++lastRequestId;
+
     try {
-      state.results = await searchManga({ q: query, page: 1, limit: 9 });
+      const results = await searchManga({ q: query, page: 1, limit: 9 });
+      if (requestId !== lastRequestId) return;
+      state.results = results;
     } catch (error) {
       console.error(error);
+      if (requestId !== lastRequestId) return;
       state.results = [];
       renderEmpty(resultsGrid, "Search failed. Try again.");
       showStatus("Search failed. Try again.", "warning");
