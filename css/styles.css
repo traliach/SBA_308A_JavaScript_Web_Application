@@ -45,3 +45,8 @@
   margin-top: 0.5rem;
   font-size: 0.9rem;
 }
+
+.status-chip {
+  border: 0;
+  cursor: pointer;
+}

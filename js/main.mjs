@@ -158,7 +158,13 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
             <img src="${item.imageUrl}" class="card-img-top" alt="${item.title}" />
             <div class="card-body d-flex flex-column">
               <h3 class="h6 card-title">${item.title}</h3>
-              ${item.status ? `<span class="badge text-bg-secondary mb-2">${item.status}</span>` : ""}
+              ${
+                item.status
+                  ? actionName === "remove"
+                    ? `<button type="button" class="badge text-bg-secondary mb-2 status-chip" data-action="cycle-status" data-id="${item.id}">${item.status}</button>`
+                    : `<span class="badge text-bg-secondary mb-2">${item.status}</span>`
+                  : ""
+              }
               <p class="small text-muted mb-3">
                 Year: ${item.year ?? "N/A"} · Score: ${item.score ?? "N/A"}
               </p>
@@ -342,6 +348,23 @@ if (resultsGrid) {
 
 if (savedGrid) {
   savedGrid.addEventListener("click", (event) => {
+    const statusBtn = event.target.closest("[data-action='cycle-status']");
+    if (statusBtn) {
+      const id = statusBtn.dataset.id;
+      const statuses = ["Plan to Read", "Reading", "Completed"];
+      const item = state.saved.find((savedItem) => savedItem.id === id);
+      if (!item) return;
+
+      const currentIndex = Math.max(0, statuses.indexOf(item.status));
+      const nextStatus = statuses[(currentIndex + 1) % statuses.length];
+      item.status = nextStatus;
+
+      setSavedList(state.saved);
+      render();
+      showStatus(`Status: ${nextStatus}`, "info");
+      return;
+    }
+
     const button = event.target.closest("[data-action='remove']");
     if (!button) return;
 
