@@ -19,6 +19,7 @@ const nextBtn = document.getElementById("next-btn");
 const pageIndicator = document.getElementById("page-indicator");
 const detailsOffcanvasEl = document.getElementById("details-offcanvas");
 const detailsBody = document.getElementById("details-body");
+const savedFilter = document.getElementById("saved-filter");
 
 const state = {
   results: [],
@@ -26,6 +27,7 @@ const state = {
   query: "",
   page: 1,
   hasNextPage: false,
+  savedFilter: "all",
 };
 
 let lastRequestId = 0;
@@ -191,7 +193,18 @@ const updateCounts = () => {
 
 const render = () => {
   renderGrid(resultsGrid, state.results, "Save", "save");
-  renderGrid(savedGrid, state.saved, "Remove", "remove");
+  const filteredSaved =
+    state.savedFilter === "all"
+      ? state.saved
+      : state.saved.filter((item) => item.status === state.savedFilter);
+
+  if (!filteredSaved.length) {
+    const label =
+      state.savedFilter === "all" ? "Nothing to show yet." : "No manga in this filter yet.";
+    renderEmpty(savedGrid, label);
+  } else {
+    renderGrid(savedGrid, filteredSaved, "Remove", "remove");
+  }
   updateCounts();
 };
 
@@ -252,6 +265,21 @@ if (clearBtn) {
     state.query = "";
     state.page = 1;
     state.hasNextPage = false;
+    render();
+  });
+}
+
+if (savedFilter) {
+  savedFilter.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-filter]");
+    if (!button) return;
+
+    state.savedFilter = button.dataset.filter;
+
+    savedFilter.querySelectorAll("[data-filter]").forEach((el) => {
+      el.classList.toggle("active", el.dataset.filter === state.savedFilter);
+    });
+
     render();
   });
 }
