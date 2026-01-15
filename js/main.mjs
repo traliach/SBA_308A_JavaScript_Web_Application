@@ -1,3 +1,5 @@
+import { CRUDCRUD_BASE } from "./config.mjs";
+
 console.log("Manga Hub booted ✅");
 
 const form = document.getElementById("search-form");
@@ -12,6 +14,10 @@ const state = {
   results: [],
   saved: [],
 };
+
+const SAVED_ENDPOINT = CRUDCRUD_BASE
+  ? `${CRUDCRUD_BASE}/manga`
+  : null;
 
 // Temporary mock data for UI wiring (replace with API results later)
 const mockResults = [
@@ -56,6 +62,49 @@ const fetchJikanResults = async (query) => {
   return (data.data ?? []).map(toCardItem);
 };
 
+const loadSaved = async () => {
+  if (!SAVED_ENDPOINT) {
+    return;
+  }
+  const response = await fetch(SAVED_ENDPOINT);
+  if (!response.ok) {
+    throw new Error("CrudCrud load failed");
+  }
+  const data = await response.json();
+  state.saved = data.map((item) => ({
+    ...item,
+    crudId: item._id,
+  }));
+};
+
+const saveToCrudCrud = async (item) => {
+  if (!SAVED_ENDPOINT) {
+    return { ...item, crudId: item.id };
+  }
+  const response = await fetch(SAVED_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(item),
+  });
+  if (!response.ok) {
+    throw new Error("CrudCrud save failed");
+  }
+  const saved = await response.json();
+  return { ...item, crudId: saved._id };
+};
+
+const removeFromCrudCrud = async (crudId) => {
+  if (!SAVED_ENDPOINT) {
+    return;
+  }
+  const response = await fetch(`${SAVED_ENDPOINT}/${crudId}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error("CrudCrud delete failed");
+  }
+};
+
 const renderEmpty = (grid, message) => {
   grid.innerHTML = `
     <div class="col-12">
@@ -84,7 +133,7 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
               <button
                 class="btn btn-sm btn-outline-primary mt-auto"
                 data-action="${actionName}"
-                data-id="${item.id}"
+                data-id="${item.crudId ?? item.id}"
               >
                 ${actionLabel}
               </button>
@@ -135,26 +184,49 @@ if (clearBtn) {
 }
 
 if (resultsGrid) {
-  resultsGrid.addEventListener("click", (event) => {
+  resultsGrid.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-action='save']");
     if (!button) return;
 
     const item = findById(state.results, button.dataset.id);
     if (!item || findById(state.saved, item.id)) return;
 
-    state.saved = [...state.saved, item];
-    render();
+    try {
+      const savedItem = await saveToCrudCrud(item);
+      state.saved = [...state.saved, savedItem];
+      render();
+    } catch (error) {
+      console.error(error);
+    }
   });
 }
 
 if (savedGrid) {
-  savedGrid.addEventListener("click", (event) => {
+  savedGrid.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-action='remove']");
     if (!button) return;
 
-    state.saved = state.saved.filter((item) => item.id !== button.dataset.id);
-    render();
+    const item = state.saved.find(
+      (savedItem) => savedItem.crudId === button.dataset.id
+    );
+    if (!item) return;
+
+    try {
+      await removeFromCrudCrud(item.crudId);
+      state.saved = state.saved.filter(
+        (savedItem) => savedItem.crudId !== item.crudId
+      );
+      render();
+    } catch (error) {
+      console.error(error);
+    }
   });
 }
 
-render();
+loadSaved()
+  .catch((error) => {
+    console.error(error);
+  })
+  .finally(() => {
+    render();
+  });
