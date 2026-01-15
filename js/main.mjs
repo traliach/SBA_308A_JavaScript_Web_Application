@@ -38,6 +38,24 @@ const mockResults = [
   },
 ];
 
+const toCardItem = (item) => ({
+  id: String(item.mal_id),
+  title: item.title,
+  year: item.year ?? "N/A",
+  score: item.score ?? "N/A",
+  imageUrl: item.images?.jpg?.image_url ?? "https://placehold.co/300x420?text=No+Image",
+});
+
+const fetchJikanResults = async (query) => {
+  const url = `https://api.jikan.moe/v4/manga?q=${encodeURIComponent(query)}&limit=9`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Jikan request failed");
+  }
+  const data = await response.json();
+  return (data.data ?? []).map(toCardItem);
+};
+
 const renderEmpty = (grid, message) => {
   grid.innerHTML = `
     <div class="col-12">
@@ -92,16 +110,18 @@ const render = () => {
 const findById = (list, id) => list.find((item) => item.id === id);
 
 if (form) {
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const query = searchInput.value.trim().toLowerCase();
-    if (!query) {
-      return;
-    }
+    const query = searchInput.value.trim();
+    if (!query) return;
 
-    state.results = mockResults.filter((item) =>
-      item.title.toLowerCase().includes(query)
-    );
+    try {
+      state.results = await fetchJikanResults(query);
+    } catch (error) {
+      console.error(error);
+      state.results = [];
+      renderEmpty(resultsGrid, "Search failed. Try again.");
+    }
     render();
   });
 }
