@@ -333,6 +333,11 @@ if (resultsGrid) {
     const card = event.target.closest("[data-manga-id]");
     if (!card) return;
 
+    resultsGrid.querySelectorAll(".card.card-selected").forEach((el) => {
+      el.classList.remove("card-selected");
+    });
+    card.classList.add("card-selected");
+
     const mangaId = card.dataset.mangaId;
     if (!mangaId) return;
 
