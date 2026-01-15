@@ -48,34 +48,6 @@ const loadSaved = async () => {
   state.saved = getSavedList();
 };
 
-const saveToCrudCrud = async (item) => {
-  if (!SAVED_ENDPOINT) {
-    return { ...item, crudId: item.id };
-  }
-  const response = await fetch(SAVED_ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(item),
-  });
-  if (!response.ok) {
-    throw new Error("CrudCrud save failed");
-  }
-  const saved = await response.json();
-  return { ...item, crudId: saved._id };
-};
-
-const removeFromCrudCrud = async (crudId) => {
-  if (!SAVED_ENDPOINT) {
-    return;
-  }
-  const response = await fetch(`${SAVED_ENDPOINT}/${crudId}`, {
-    method: "DELETE",
-  });
-  if (!response.ok) {
-    throw new Error("CrudCrud delete failed");
-  }
-};
-
 const renderEmpty = (grid, message) => {
   grid.innerHTML = `
     <div class="col-12">
@@ -115,7 +87,7 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
               <button
                 class="btn btn-sm btn-outline-primary mt-auto"
                 data-action="${actionName}"
-                data-id="${item.crudId ?? item.id}"
+                data-id="${item.id}"
               >
                 ${actionLabel}
               </button>
@@ -167,7 +139,7 @@ if (clearBtn) {
 }
 
 if (resultsGrid) {
-  resultsGrid.addEventListener("click", async (event) => {
+  resultsGrid.addEventListener("click", (event) => {
     const button = event.target.closest("[data-action='save']");
     if (!button) return;
 
@@ -182,12 +154,12 @@ if (resultsGrid) {
 }
 
 if (savedGrid) {
-  savedGrid.addEventListener("click", async (event) => {
+  savedGrid.addEventListener("click", (event) => {
     const button = event.target.closest("[data-action='remove']");
     if (!button) return;
 
     const item = state.saved.find(
-      (savedItem) => savedItem.crudId === button.dataset.id
+      (savedItem) => savedItem.id === button.dataset.id
     );
     if (!item) return;
 
