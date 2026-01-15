@@ -22,9 +22,48 @@
     </header>
 
     <main class="container pb-5">
-      <div class="alert alert-info">
-        UI scaffold is ready. Next step: build search form + results grid.
-      </div>
+      <section class="mb-4">
+        <form id="search-form" class="row g-2">
+          <div class="col-12 col-md-8">
+            <label for="search-input" class="form-label">Search manga</label>
+            <input
+              id="search-input"
+              name="query"
+              type="text"
+              class="form-control"
+              placeholder="e.g., One Piece"
+              autocomplete="off"
+              required
+            />
+          </div>
+          <div class="col-6 col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary w-100">
+              Search
+            </button>
+          </div>
+          <div class="col-6 col-md-2 align-self-end">
+            <button type="button" id="clear-btn" class="btn btn-outline-secondary w-100">
+              Clear
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 mb-0">Results</h2>
+          <span id="results-count" class="text-muted small">0 found</span>
+        </div>
+        <div id="results-grid" class="row g-3"></div>
+      </section>
+
+      <section>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 mb-0">My List</h2>
+          <span id="saved-count" class="text-muted small">0 saved</span>
+        </div>
+        <div id="saved-grid" class="row g-3"></div>
+      </section>
     </main>
 
     <script type="module" src="js/main.mjs"></script>
