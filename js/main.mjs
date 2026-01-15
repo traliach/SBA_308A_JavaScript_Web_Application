@@ -22,6 +22,35 @@ const state = {
 
 let lastRequestId = 0;
 let loadingTimerId = null;
+let debounceTimerId = null;
+
+const runSearch = async (query) => {
+  const requestId = ++lastRequestId;
+  showStatus("Searching...", "info");
+  startLoading();
+
+  try {
+    const results = await searchManga({ q: query, page: 1, limit: 9 });
+    if (requestId !== lastRequestId) return;
+    state.results = results;
+    showStatus("Results updated.", "success");
+  } catch (error) {
+    console.error(error);
+    if (requestId !== lastRequestId) return;
+    state.results = [];
+    renderEmpty(resultsGrid, "Search failed. Try again.");
+    showStatus("Search failed. Try again.", "warning");
+  }
+  finishLoading();
+  render();
+};
+
+const debouncedSearch = (query) => {
+  window.clearTimeout(debounceTimerId);
+  debounceTimerId = window.setTimeout(() => {
+    runSearch(query);
+  }, 300);
+};
 
 const setLoadingPercent = (value) => {
   if (!loadingProgress || !loadingPercent) return;
@@ -153,24 +182,7 @@ if (form) {
     const query = searchInput.value.trim();
     if (!query) return;
 
-    const requestId = ++lastRequestId;
-    showStatus("Searching...", "info");
-    startLoading();
-
-    try {
-      const results = await searchManga({ q: query, page: 1, limit: 9 });
-      if (requestId !== lastRequestId) return;
-      state.results = results;
-      showStatus("Results updated.", "success");
-    } catch (error) {
-      console.error(error);
-      if (requestId !== lastRequestId) return;
-      state.results = [];
-      renderEmpty(resultsGrid, "Search failed. Try again.");
-      showStatus("Search failed. Try again.", "warning");
-    }
-    finishLoading();
-    render();
+    debouncedSearch(query);
   });
 }
 
