@@ -1,7 +1,7 @@
 import { searchManga } from "./api/jikan.mjs";
 import { getSavedList, setSavedList } from "./storage.mjs";
 
-console.log("Manga Hub booted ✅");
+console.log("Manga Hub booted");
 
 const form = document.getElementById("search-form");
 const searchInput = document.getElementById("search-input");
@@ -201,7 +201,8 @@ if (form) {
     const query = searchInput.value.trim();
     if (!query) return;
 
-    debouncedSearch(query);
+    const normalized = query.toLowerCase();
+    debouncedSearch(normalized);
   });
 }
 
