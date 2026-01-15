@@ -147,7 +147,7 @@ if (resultsGrid) {
     const item = findById(state.results, button.dataset.id);
     if (!item || findById(state.saved, item.id)) return;
 
-    state.saved = [...state.saved, { ...item, status: "Planned" }];
+    state.saved = [...state.saved, { ...item, status: "Plan to Read" }];
     setSavedList(state.saved);
     render();
     showStatus("Saved to My List.", "success");
