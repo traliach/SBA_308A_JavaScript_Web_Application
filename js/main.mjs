@@ -14,30 +14,40 @@ const statusEl = document.getElementById("status");
 const loadingOverlay = document.getElementById("loading-overlay");
 const loadingProgress = document.getElementById("loading-progress");
 const loadingPercent = document.getElementById("loading-percent");
+const prevBtn = document.getElementById("prev-btn");
+const nextBtn = document.getElementById("next-btn");
+const pageIndicator = document.getElementById("page-indicator");
 
 const state = {
   results: [],
   saved: [],
+  query: "",
+  page: 1,
+  hasNextPage: false,
 };
 
 let lastRequestId = 0;
 let loadingTimerId = null;
 let debounceTimerId = null;
 
-const runSearch = async (query) => {
+const runSearch = async (query, page = 1) => {
   const requestId = ++lastRequestId;
   showStatus("Searching...", "info");
   startLoading();
 
   try {
-    const results = await searchManga({ q: query, page: 1, limit: 9 });
+    const result = await searchManga({ q: query, page, limit: 9 });
     if (requestId !== lastRequestId) return;
-    state.results = results;
+    state.results = result.items;
+    state.query = query;
+    state.page = page;
+    state.hasNextPage = result.hasNextPage;
     showStatus("Results updated.", "success");
   } catch (error) {
     console.error(error);
     if (requestId !== lastRequestId) return;
     state.results = [];
+    state.hasNextPage = false;
     renderEmpty(resultsGrid, "Search failed. Try again.");
     showStatus("Search failed. Try again.", "warning");
   }
@@ -45,10 +55,10 @@ const runSearch = async (query) => {
   render();
 };
 
-const debouncedSearch = (query) => {
+const debouncedSearch = (query, page = 1) => {
   window.clearTimeout(debounceTimerId);
   debounceTimerId = window.setTimeout(() => {
-    runSearch(query);
+    runSearch(query, page);
   }, 300);
 };
 
@@ -166,6 +176,15 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
 const updateCounts = () => {
   resultsCount.textContent = `${state.results.length} found`;
   savedCount.textContent = `${state.saved.length} saved`;
+  if (pageIndicator) {
+    pageIndicator.textContent = `Page ${state.page}`;
+  }
+  if (prevBtn) {
+    prevBtn.disabled = state.page <= 1;
+  }
+  if (nextBtn) {
+    nextBtn.disabled = !state.hasNextPage;
+  }
 };
 
 const render = () => {
@@ -199,7 +218,24 @@ if (clearBtn) {
   clearBtn.addEventListener("click", () => {
     searchInput.value = "";
     state.results = [];
+    state.query = "";
+    state.page = 1;
+    state.hasNextPage = false;
     render();
+  });
+}
+
+if (prevBtn) {
+  prevBtn.addEventListener("click", () => {
+    if (!state.query || state.page <= 1) return;
+    debouncedSearch(state.query, state.page - 1);
+  });
+}
+
+if (nextBtn) {
+  nextBtn.addEventListener("click", () => {
+    if (!state.query || !state.hasNextPage) return;
+    debouncedSearch(state.query, state.page + 1);
   });
 }
 

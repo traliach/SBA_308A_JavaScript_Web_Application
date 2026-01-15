@@ -15,5 +15,8 @@ export const searchManga = async ({ q, page = 1, limit = 9 }) => {
     throw new Error("Jikan request failed");
   }
   const data = await response.json();
-  return (data.data ?? []).map(toCardItem);
+  return {
+    items: (data.data ?? []).map(toCardItem),
+    hasNextPage: data.pagination?.has_next_page ?? false,
+  };
 };
