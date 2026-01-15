@@ -1,4 +1,5 @@
 import { searchManga } from "./api/jikan.mjs";
+import { getSavedList } from "./storage.mjs";
 
 console.log("Manga Hub booted ✅");
 
@@ -16,9 +17,6 @@ const state = {
   saved: [],
 };
 
-const SAVED_ENDPOINT = CRUDCRUD_BASE
-  ? `${CRUDCRUD_BASE}/manga`
-  : null;
 
 // Temporary mock data for UI wiring (replace with API results later)
 const mockResults = [
@@ -47,18 +45,7 @@ const mockResults = [
 
 
 const loadSaved = async () => {
-  if (!SAVED_ENDPOINT) {
-    return;
-  }
-  const response = await fetch(SAVED_ENDPOINT);
-  if (!response.ok) {
-    throw new Error("CrudCrud load failed");
-  }
-  const data = await response.json();
-  state.saved = data.map((item) => ({
-    ...item,
-    crudId: item._id,
-  }));
+  state.saved = getSavedList();
 };
 
 const saveToCrudCrud = async (item) => {
