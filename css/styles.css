@@ -2,3 +2,46 @@
   height: 320px;
   object-fit: cover;
 }
+
+.loading-overlay {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.loading-box {
+  background: #0b0b0b;
+  color: #8cff66;
+  border: 2px solid #1f1f1f;
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  width: min(360px, 90%);
+  text-align: center;
+  font-family: "Courier New", Courier, monospace;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.loading-title {
+  letter-spacing: 2px;
+  margin-bottom: 0.75rem;
+}
+
+.loading-bar {
+  background: #151515;
+  border: 2px solid #2e2e2e;
+  border-radius: 6px;
+  height: 18px;
+  overflow: hidden;
+}
+
+.loading-progress {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #58ff5c, #b5ff5c);
+  transition: width 120ms linear;
+}
+
+.loading-percent {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}

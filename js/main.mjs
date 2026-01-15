@@ -11,6 +11,9 @@ const savedGrid = document.getElementById("saved-grid");
 const resultsCount = document.getElementById("results-count");
 const savedCount = document.getElementById("saved-count");
 const statusEl = document.getElementById("status");
+const loadingOverlay = document.getElementById("loading-overlay");
+const loadingProgress = document.getElementById("loading-progress");
+const loadingPercent = document.getElementById("loading-percent");
 
 const state = {
   results: [],
@@ -18,6 +21,36 @@ const state = {
 };
 
 let lastRequestId = 0;
+let loadingTimerId = null;
+
+const setLoadingPercent = (value) => {
+  if (!loadingProgress || !loadingPercent) return;
+  const clamped = Math.max(0, Math.min(100, value));
+  loadingProgress.style.width = `${clamped}%`;
+  loadingPercent.textContent = String(clamped);
+};
+
+const startLoading = () => {
+  if (!loadingOverlay) return;
+  loadingOverlay.classList.remove("d-none");
+  setLoadingPercent(0);
+  let current = 0;
+  window.clearInterval(loadingTimerId);
+  loadingTimerId = window.setInterval(() => {
+    if (current >= 90) return;
+    current += Math.floor(Math.random() * 5) + 1;
+    setLoadingPercent(Math.min(90, current));
+  }, 120);
+};
+
+const finishLoading = () => {
+  if (!loadingOverlay) return;
+  window.clearInterval(loadingTimerId);
+  setLoadingPercent(100);
+  window.setTimeout(() => {
+    loadingOverlay.classList.add("d-none");
+  }, 300);
+};
 
 // Temporary mock data for UI wiring (replace with API results later)
 const mockResults = [
@@ -122,11 +155,13 @@ if (form) {
 
     const requestId = ++lastRequestId;
     showStatus("Searching...", "info");
+    startLoading();
 
     try {
       const results = await searchManga({ q: query, page: 1, limit: 9 });
       if (requestId !== lastRequestId) return;
       state.results = results;
+      showStatus("Results updated.", "success");
     } catch (error) {
       console.error(error);
       if (requestId !== lastRequestId) return;
@@ -134,6 +169,7 @@ if (form) {
       renderEmpty(resultsGrid, "Search failed. Try again.");
       showStatus("Search failed. Try again.", "warning");
     }
+    finishLoading();
     render();
   });
 }
