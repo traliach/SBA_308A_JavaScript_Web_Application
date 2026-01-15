@@ -38,6 +38,7 @@ const runSearch = async (query, page = 1) => {
   const requestId = ++lastRequestId;
   showStatus("Searching...", "info");
   startLoading();
+  renderSkeletonCards(resultsGrid, 6);
 
   try {
     const result = await searchManga({ q: query, page, limit: 9 });
@@ -131,6 +132,26 @@ const renderEmpty = (grid, message) => {
       <div class="alert alert-light mb-0">${message}</div>
     </div>
   `;
+};
+
+const renderSkeletonCards = (grid, count = 6) => {
+  if (!grid) return;
+  grid.innerHTML = Array.from({ length: count })
+    .map(
+      () => `
+        <div class="col-12 col-sm-6 col-lg-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-img-top skeleton"></div>
+            <div class="card-body">
+              <div class="skeleton mb-2" style="height: 16px; width: 70%; border-radius: 6px;"></div>
+              <div class="skeleton mb-3" style="height: 12px; width: 55%; border-radius: 6px;"></div>
+              <div class="skeleton" style="height: 32px; width: 100%; border-radius: 6px;"></div>
+            </div>
+          </div>
+        </div>
+      `
+    )
+    .join("");
 };
 
 const showStatus = (message, type = "info") => {
