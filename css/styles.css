@@ -33,6 +33,10 @@ body.bg-light::before {
   box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.12);
 }
 
+#category-bar .btn {
+  border-radius: 999px;
+}
+
 .loading-overlay {
   display: flex;
   justify-content: center;

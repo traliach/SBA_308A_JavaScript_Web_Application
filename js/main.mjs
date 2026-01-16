@@ -6,6 +6,7 @@ console.log("Manga Hub booted");
 const form = document.getElementById("search-form");
 const searchInput = document.getElementById("search-input");
 const clearBtn = document.getElementById("clear-btn");
+const categoryBar = document.getElementById("category-bar");
 const resultsGrid = document.getElementById("results-grid");
 const savedGrid = document.getElementById("saved-grid");
 const resultsCount = document.getElementById("results-count");
@@ -31,6 +32,21 @@ const state = {
   hasNextPage: false,
   savedFilter: "all",
 };
+
+const CATEGORIES = [
+  "Action & Adventure",
+  "Comedy",
+  "Crime & Thriller",
+  "Dark & Horror",
+  "Drama",
+  "Fantasy & Magic",
+  "Martial Arts",
+  "Psychological",
+  "Romance",
+  "Sci‑Fi & Mystery",
+  "Sports",
+  "Slice of Life",
+];
 
 let lastRequestId = 0;
 let loadingTimerId = null;
@@ -253,6 +269,27 @@ const render = () => {
 
 const findById = (list, id) => list.find((item) => item.id === id);
 
+const renderCategoryBar = () => {
+  if (!categoryBar) return;
+  categoryBar.innerHTML = CATEGORIES.map(
+    (name) =>
+      `<button type="button" class="btn btn-sm btn-outline-primary" data-category="${name}">${name}</button>`
+  ).join("");
+};
+
+if (categoryBar) {
+  categoryBar.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-category]");
+    if (!btn || isLoading) return;
+    const category = btn.dataset.category;
+    if (!category) return;
+
+    // Fill the input so it feels like the store "collections" UX.
+    if (searchInput) searchInput.value = category;
+    debouncedSearch(category.toLowerCase(), 1);
+  });
+}
+
 const renderDetails = (details) => {
   if (!detailsBody) return;
   const genres = details.genres?.length ? details.genres.join(", ") : "N/A";
@@ -431,5 +468,6 @@ loadSaved()
     showStatus("Failed to load saved list.", "warning");
   })
   .finally(() => {
+    renderCategoryBar();
     render();
   });
