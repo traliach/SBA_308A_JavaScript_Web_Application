@@ -568,4 +568,11 @@ loadSaved()
     renderCategoryBar();
     renderFeaturedBar();
     render();
+
+    // Auto-load results so the page isn't empty on first visit
+    if (!state.query) {
+      const defaultQuery = "popular";
+      if (searchInput) searchInput.value = defaultQuery;
+      debouncedSearch(defaultQuery.toLowerCase(), 1);
+    }
   });
