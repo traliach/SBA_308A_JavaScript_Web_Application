@@ -1,8 +1,6 @@
 import { getMangaById, searchManga } from "./api/kitsu.mjs";
 import { getSavedList, setSavedList } from "./storage.mjs";
 
-console.log("Manga Hub booted");
-
 const form = document.getElementById("search-form");
 const searchInput = document.getElementById("search-input");
 const clearBtn = document.getElementById("clear-btn");
@@ -26,6 +24,7 @@ const detailsOffcanvasEl = document.getElementById("details-offcanvas");
 const detailsBody = document.getElementById("details-body");
 const savedFilter = document.getElementById("saved-filter");
 
+// App state (keep simple so it is easy to follow)
 const state = {
   results: [],
   saved: [],
@@ -35,6 +34,16 @@ const state = {
   savedFilter: "all",
 };
 
+// Basic HTML escape for safe text rendering
+const escapeHtml = (value) =>
+  String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+// Static lists for quick searches
 const CATEGORIES = [
   "Action & Adventure",
   "Comedy",
@@ -66,7 +75,7 @@ let isLoading = false;
 
 let soundEnabled = false;
 
-// Tiny retro "beep" (no external audio file, no autoplay)
+// Tiny retro beep (no external file, no autoplay)
 const playClickSound = () => {
   if (!soundEnabled) return;
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -99,6 +108,7 @@ if (soundToggleBtn) {
   });
 }
 
+// Disable controls while loading to avoid spam clicks
 const setControlsDisabled = (disabled) => {
   if (searchBtn) searchBtn.disabled = disabled;
   if (prevBtn) prevBtn.disabled = disabled || state.page <= 1;
@@ -106,6 +116,7 @@ const setControlsDisabled = (disabled) => {
   if (clearBtn) clearBtn.disabled = disabled;
 };
 
+// Main search flow (debounce + stale-response protection)
 const runSearch = async (query, page = 1) => {
   const requestId = ++lastRequestId;
   showStatus("Searching...", "info");
@@ -132,6 +143,7 @@ const runSearch = async (query, page = 1) => {
   render();
 };
 
+// Small debounce to reduce API spam
 const debouncedSearch = (query, page = 1) => {
   window.clearTimeout(debounceTimerId);
   debounceTimerId = window.setTimeout(() => {
@@ -139,6 +151,7 @@ const debouncedSearch = (query, page = 1) => {
   }, 300);
 };
 
+// Retro loading meter
 const setLoadingPercent = (value) => {
   if (!loadingProgress || !loadingPercent) return;
   const clamped = Math.max(0, Math.min(100, value));
@@ -174,36 +187,12 @@ const finishLoading = () => {
   }, 300);
 };
 
-// Temporary mock data for UI wiring (replace with API results later)
-const mockResults = [
-  {
-    id: "m1",
-    title: "One Piece",
-    year: 1999,
-    score: 8.7,
-    imageUrl: "https://placehold.co/300x420?text=Cover",
-  },
-  {
-    id: "m2",
-    title: "Jujutsu Kaisen",
-    year: 2018,
-    score: 8.5,
-    imageUrl: "https://placehold.co/300x420?text=Cover",
-  },
-  {
-    id: "m3",
-    title: "Spy x Family",
-    year: 2019,
-    score: 8.3,
-    imageUrl: "https://placehold.co/300x420?text=Cover",
-  },
-];
-
-
+// Load saved list from localStorage
 const loadSaved = async () => {
   state.saved = getSavedList();
 };
 
+// Empty-state helper
 const renderEmpty = (grid, message) => {
   grid.innerHTML = `
     <div class="col-12">
@@ -212,6 +201,7 @@ const renderEmpty = (grid, message) => {
   `;
 };
 
+// Skeleton cards while waiting for API
 const renderSkeletonCards = (grid, count = 6) => {
   if (!grid) return;
   grid.innerHTML = Array.from({ length: count })
@@ -232,6 +222,7 @@ const renderSkeletonCards = (grid, count = 6) => {
     .join("");
 };
 
+// Small status banner under the search bar
 const showStatus = (message, type = "info") => {
   if (!statusEl) return;
   statusEl.textContent = message;
@@ -243,6 +234,7 @@ const showStatus = (message, type = "info") => {
   }, 2500);
 };
 
+// Card renderer for Results + My List
 const renderGrid = (grid, items, actionLabel, actionName) => {
   if (!items.length) {
     renderEmpty(grid, "Nothing to show yet.");
@@ -268,21 +260,26 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
               ? "status-primary"
               : "status-secondary";
 
+        const safeTitle = escapeHtml(item.title);
+        const safeStatus = item.status ? escapeHtml(item.status) : "";
+        const safeYear = escapeHtml(item.year ?? "N/A");
+        const safeScore = escapeHtml(item.score ?? "N/A");
+
         return `
         <div class="col-12 col-sm-6 col-lg-4">
           <div class="card h-100 shadow-sm" data-manga-id="${item.id}">
-            <img src="${item.imageUrl}" class="card-img-top" alt="${item.title}" />
+            <img src="${item.imageUrl}" class="card-img-top" alt="${safeTitle}" />
             <div class="card-body d-flex flex-column">
-              <h3 class="h6 card-title">${item.title}</h3>
+              <h3 class="h6 card-title">${safeTitle}</h3>
               ${
                 item.status
                   ? actionName === "remove"
-                    ? `<button type="button" class="status-chip mb-2 ${statusVariant}" data-action="cycle-status" data-id="${item.id}" data-status="${item.status}">${item.status}</button>`
-                    : `<span class="badge text-bg-secondary mb-2">${item.status}</span>`
+                    ? `<button type="button" class="status-chip mb-2 ${statusVariant}" data-action="cycle-status" data-id="${item.id}" data-status="${safeStatus}">${safeStatus}</button>`
+                    : `<span class="badge text-bg-secondary mb-2">${safeStatus}</span>`
                   : ""
               }
               <p class="small text-muted mb-3">
-                Year: ${item.year ?? "N/A"} · Score: ${item.score ?? "N/A"}
+                Year: ${safeYear} · Score: ${safeScore}
               </p>
               <button
                 class="${buttonClasses}"
@@ -301,6 +298,7 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
     .join("");
 };
 
+// Update counts and pagination buttons
 const updateCounts = () => {
   resultsCount.textContent = `${state.results.length} found`;
   savedCount.textContent = `${state.saved.length} saved`;
@@ -315,6 +313,7 @@ const updateCounts = () => {
   }
 };
 
+// Main render
 const render = () => {
   renderGrid(resultsGrid, state.results, "Save", "save");
   const filteredSaved =
@@ -334,6 +333,7 @@ const render = () => {
 
 const findById = (list, id) => list.find((item) => item.id === id);
 
+// Top quick category buttons
 const renderCategoryBar = () => {
   if (!categoryBar) return;
   categoryBar.innerHTML = CATEGORIES.map(
@@ -342,6 +342,7 @@ const renderCategoryBar = () => {
   ).join("");
 };
 
+// Featured picks buttons
 const renderFeaturedBar = () => {
   if (!featuredBar) return;
   featuredBar.innerHTML = FEATURED.map(
@@ -376,23 +377,32 @@ if (featuredBar) {
   });
 }
 
+// Offcanvas details panel
 const renderDetails = (details) => {
   if (!detailsBody) return;
-  const genres = details.genres?.length ? details.genres.join(", ") : "N/A";
+  const genres = details.genres?.length
+    ? escapeHtml(details.genres.join(", "))
+    : "N/A";
+  const safeTitle = escapeHtml(details.title);
+  const safeSynopsis = escapeHtml(details.synopsis);
+  const safeScore = escapeHtml(details.score);
+  const safeStatus = escapeHtml(details.status);
+  const safeChapters = escapeHtml(details.chapters);
+  const safeVolumes = escapeHtml(details.volumes);
   detailsBody.innerHTML = `
     <div class="d-flex gap-3">
       ${
         details.imageUrl
-          ? `<img src="${details.imageUrl}" alt="${details.title}" style="width:120px;height:auto;border-radius:8px;" />`
+          ? `<img src="${details.imageUrl}" alt="${safeTitle}" style="width:120px;height:auto;border-radius:8px;" />`
           : ""
       }
       <div>
-        <h3 class="h6 mb-2">${details.title}</h3>
+        <h3 class="h6 mb-2">${safeTitle}</h3>
         <div class="small text-muted mb-2">
-          Score: ${details.score} · Status: ${details.status}
+          Score: ${safeScore} · Status: ${safeStatus}
         </div>
         <div class="small text-muted mb-2">
-          Chapters: ${details.chapters} · Volumes: ${details.volumes}
+          Chapters: ${safeChapters} · Volumes: ${safeVolumes}
         </div>
         <div class="small text-muted mb-3">
           Genres: ${genres}
@@ -400,7 +410,7 @@ const renderDetails = (details) => {
       </div>
     </div>
     <hr />
-    <p class="mb-0">${details.synopsis}</p>
+    <p class="mb-0">${safeSynopsis}</p>
   `;
 };
 
