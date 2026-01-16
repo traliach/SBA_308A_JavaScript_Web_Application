@@ -1,4 +1,4 @@
-import { getMangaById, searchManga } from "./api/jikan.mjs";
+import { getMangaById, searchManga } from "./api/kitsu.mjs";
 import { getSavedList, setSavedList } from "./storage.mjs";
 
 console.log("Manga Hub booted");

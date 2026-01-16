@@ -24,13 +24,13 @@ A single-page JavaScript web app that lets you **search manga** using the **Jika
 1. Open the folder in VS Code (recommended).
 2. Run with **Live Server** (recommended) OR just open `index.html` in your browser.
 
-## API usage (Jikan)
+## API usage (Kitsu)
 This app uses **GET** requests only:
-- **Search manga**: `/v4/manga?q={query}&page={page}&limit={limit}`
-- **Manga details**: `/v4/manga/{id}`
+- **Search manga**: `/api/edge/manga?filter[text]={query}&page[limit]={limit}&page[offset]={offset}`
+- **Manga details**: `/api/edge/manga/{id}?include=categories`
 
 Notes:
-- Sometimes Jikan can rate-limit or time out (like `429` or `504`). If that happens, just try again.
+- Sometimes Kitsu (or your network) can fail. If that happens, just try again.
 
 ## App architecture (modules)
 - **`js/api/jikan.mjs`**: API functions (`searchManga`, `getMangaById`).
