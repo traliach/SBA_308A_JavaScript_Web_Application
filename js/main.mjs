@@ -11,6 +11,8 @@ const savedGrid = document.getElementById("saved-grid");
 const resultsCount = document.getElementById("results-count");
 const savedCount = document.getElementById("saved-count");
 const statusEl = document.getElementById("status");
+const searchBtn = document.getElementById("search-btn");
+const searchSpinner = document.getElementById("search-spinner");
 const loadingOverlay = document.getElementById("loading-overlay");
 const loadingProgress = document.getElementById("loading-progress");
 const loadingPercent = document.getElementById("loading-percent");
@@ -33,6 +35,14 @@ const state = {
 let lastRequestId = 0;
 let loadingTimerId = null;
 let debounceTimerId = null;
+let isLoading = false;
+
+const setControlsDisabled = (disabled) => {
+  if (searchBtn) searchBtn.disabled = disabled;
+  if (prevBtn) prevBtn.disabled = disabled || state.page <= 1;
+  if (nextBtn) nextBtn.disabled = disabled || !state.hasNextPage;
+  if (clearBtn) clearBtn.disabled = disabled;
+};
 
 const runSearch = async (query, page = 1) => {
   const requestId = ++lastRequestId;
@@ -75,6 +85,9 @@ const setLoadingPercent = (value) => {
 };
 
 const startLoading = () => {
+  isLoading = true;
+  setControlsDisabled(true);
+  if (searchSpinner) searchSpinner.classList.remove("d-none");
   if (!loadingOverlay) return;
   loadingOverlay.classList.remove("d-none");
   setLoadingPercent(0);
@@ -88,6 +101,9 @@ const startLoading = () => {
 };
 
 const finishLoading = () => {
+  isLoading = false;
+  setControlsDisabled(false);
+  if (searchSpinner) searchSpinner.classList.add("d-none");
   if (!loadingOverlay) return;
   window.clearInterval(loadingTimerId);
   setLoadingPercent(100);
@@ -268,6 +284,7 @@ const renderDetails = (details) => {
 if (form) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (isLoading) return;
     const query = searchInput.value.trim();
     if (!query) return;
 
