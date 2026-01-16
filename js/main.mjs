@@ -7,6 +7,7 @@ const form = document.getElementById("search-form");
 const searchInput = document.getElementById("search-input");
 const clearBtn = document.getElementById("clear-btn");
 const categoryBar = document.getElementById("category-bar");
+const featuredBar = document.getElementById("featured-bar");
 const resultsGrid = document.getElementById("results-grid");
 const savedGrid = document.getElementById("saved-grid");
 const resultsCount = document.getElementById("results-count");
@@ -46,6 +47,15 @@ const CATEGORIES = [
   "Sci‑Fi & Mystery",
   "Sports",
   "Slice of Life",
+];
+
+const FEATURED = [
+  "One Piece",
+  "Berserk",
+  "Vagabond",
+  "Jujutsu Kaisen",
+  "Spy x Family",
+  "Fullmetal Alchemist",
 ];
 
 let lastRequestId = 0;
@@ -277,6 +287,14 @@ const renderCategoryBar = () => {
   ).join("");
 };
 
+const renderFeaturedBar = () => {
+  if (!featuredBar) return;
+  featuredBar.innerHTML = FEATURED.map(
+    (name) =>
+      `<button type="button" class="btn btn-sm btn-outline-dark" data-featured="${name}">★ ${name}</button>`
+  ).join("");
+};
+
 if (categoryBar) {
   categoryBar.addEventListener("click", (event) => {
     const btn = event.target.closest("[data-category]");
@@ -287,6 +305,19 @@ if (categoryBar) {
     // Fill the input so it feels like the store "collections" UX.
     if (searchInput) searchInput.value = category;
     debouncedSearch(category.toLowerCase(), 1);
+  });
+}
+
+if (featuredBar) {
+  featuredBar.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-featured]");
+    if (!btn || isLoading) return;
+    const title = btn.dataset.featured;
+    if (!title) return;
+
+    if (searchInput) searchInput.value = title;
+    debouncedSearch(title.toLowerCase(), 1);
+    resultsGrid?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 }
 
@@ -469,5 +500,6 @@ loadSaved()
   })
   .finally(() => {
     renderCategoryBar();
+    renderFeaturedBar();
     render();
   });

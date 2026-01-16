@@ -37,6 +37,10 @@ body.bg-light::before {
   border-radius: 999px;
 }
 
+#featured-bar .btn {
+  border-radius: 999px;
+}
+
 .loading-overlay {
   display: flex;
   justify-content: center;
