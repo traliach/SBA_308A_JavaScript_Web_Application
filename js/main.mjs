@@ -215,7 +215,17 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
 
   grid.innerHTML = items
     .map(
-      (item) => `
+      (item) => {
+        const isAlreadySaved =
+          actionName === "save" && state.saved.some((savedItem) => savedItem.id === item.id);
+        const buttonLabel =
+          actionName === "save" && isAlreadySaved ? "Saved ★" : actionLabel;
+        const buttonClasses =
+          actionName === "save" && isAlreadySaved
+            ? "btn btn-sm btn-success mt-auto"
+            : "btn btn-sm btn-outline-primary mt-auto";
+
+        return `
         <div class="col-12 col-sm-6 col-lg-4">
           <div class="card h-100 shadow-sm" data-manga-id="${item.id}">
             <img src="${item.imageUrl}" class="card-img-top" alt="${item.title}" />
@@ -232,16 +242,18 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
                 Year: ${item.year ?? "N/A"} · Score: ${item.score ?? "N/A"}
               </p>
               <button
-                class="btn btn-sm btn-outline-primary mt-auto"
+                class="${buttonClasses}"
                 data-action="${actionName}"
                 data-id="${item.id}"
+                ${isAlreadySaved ? "disabled" : ""}
               >
-                ${actionLabel}
+                ${buttonLabel}
               </button>
             </div>
           </div>
         </div>
-      `
+      `;
+      }
     )
     .join("");
 };
