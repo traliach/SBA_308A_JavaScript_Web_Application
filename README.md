@@ -1,6 +1,6 @@
 # Manga Hub
 
-A single-page JavaScript web app that lets you **search manga** using the **Jikan API** and save favorites into **My List** using **localStorage**.
+A single-page JavaScript web app that lets you **search manga** using the **Kitsu API** and save favorites into **My List** using **localStorage**.
 
 ## Features
 - **Search + pagination**: Search manga and move pages with Prev/Next.
@@ -17,7 +17,7 @@ A single-page JavaScript web app that lets you **search manga** using the **Jika
 ## Tech stack
 - **Vanilla JavaScript (ES Modules)**: `type="module"`
 - **Bootstrap 5 (CDN)**: layout + offcanvas panel
-- **Jikan REST API**: manga data (GET requests)
+- **Kitsu REST API**: manga data (GET requests)
 - **localStorage**: saves My List on your computer
 
 ## How to run
@@ -33,7 +33,7 @@ Notes:
 - Sometimes Kitsu (or your network) can fail. If that happens, just try again.
 
 ## App architecture (modules)
-- **`js/api/jikan.mjs`**: API functions (`searchManga`, `getMangaById`).
+- **`js/api/kitsu.mjs`**: API functions (`searchManga`, `getMangaById`).
 - **`js/storage.mjs`**: localStorage helpers (`getSavedList`, `setSavedList`).
 - **`js/main.mjs`**: state + events + rendering (search, pagination, details, my list).
 - **`css/styles.css`**: styles (background, skeleton loader, card effects).
@@ -49,10 +49,10 @@ Notes:
 - **Disable controls while loading**: prevents double-click spam during fetch.
 
 ## Known issues / limitations
-- Jikan may sometimes return `429` / `5xx`; you may need to retry.
-- Search results depend on what the Jikan API returns (it can include close title matches).
+- Kitsu may sometimes fail (network / server). If that happens, retry.
+- Search results depend on what the Kitsu API returns (it can include close title matches).
 
 ## Future improvements
-- Recommendations (“related manga”) via Jikan recommendations endpoint (GET).
+- Recommendations (“related manga”) using Kitsu categories/relationships (GET).
 - More detailed error UI (status codes, retry button).
 - Split rendering into `ui.mjs` + app state into `state.mjs` for cleaner separation.
