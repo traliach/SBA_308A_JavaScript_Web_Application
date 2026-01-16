@@ -20,8 +20,20 @@ body.bg-light::before {
   pointer-events: none;
   background-image: radial-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px);
   background-size: 18px 18px;
+  background-position: 0 0;
   opacity: 0.25;
   mask-image: radial-gradient(circle at 20% 10%, black 0%, transparent 55%);
+  animation: dotsDrift 14s linear infinite;
+}
+
+@keyframes dotsDrift {
+  0% { background-position: 0 0; }
+  100% { background-position: 180px 180px; }
+}
+
+.sticky-top.bg-light {
+  background-color: rgba(248, 249, 250, 0.85) !important;
+  backdrop-filter: blur(10px);
 }
 
 .card {
@@ -39,6 +51,11 @@ body.bg-light::before {
 
 #featured-bar .btn {
   border-radius: 999px;
+}
+
+.site-footer {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
 }
 
 .loading-overlay {
