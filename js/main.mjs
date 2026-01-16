@@ -15,6 +15,7 @@ const savedCount = document.getElementById("saved-count");
 const statusEl = document.getElementById("status");
 const searchBtn = document.getElementById("search-btn");
 const searchSpinner = document.getElementById("search-spinner");
+const soundToggleBtn = document.getElementById("sound-toggle");
 const loadingOverlay = document.getElementById("loading-overlay");
 const loadingProgress = document.getElementById("loading-progress");
 const loadingPercent = document.getElementById("loading-percent");
@@ -62,6 +63,41 @@ let lastRequestId = 0;
 let loadingTimerId = null;
 let debounceTimerId = null;
 let isLoading = false;
+
+let soundEnabled = false;
+
+// Tiny retro "beep" (no external audio file, no autoplay)
+const playClickSound = () => {
+  if (!soundEnabled) return;
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+
+  const ctx = new AudioCtx();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+
+  o.type = "square";
+  o.frequency.value = 880;
+  g.gain.value = 0.04;
+
+  o.connect(g);
+  g.connect(ctx.destination);
+
+  o.start();
+  o.stop(ctx.currentTime + 0.06);
+
+  o.onended = () => {
+    ctx.close();
+  };
+};
+
+if (soundToggleBtn) {
+  soundToggleBtn.addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+    soundToggleBtn.textContent = soundEnabled ? "🔊 Sound: On" : "🔈 Sound: Off";
+    playClickSound();
+  });
+}
 
 const setControlsDisabled = (disabled) => {
   if (searchBtn) searchBtn.disabled = disabled;
@@ -473,6 +509,7 @@ if (resultsGrid) {
     setSavedList(state.saved);
     render();
     showStatus("Saved to My List.", "success");
+    playClickSound();
   });
 }
 
@@ -492,6 +529,7 @@ if (savedGrid) {
       setSavedList(state.saved);
       render();
       showStatus(`Status: ${nextStatus}`, "info");
+      playClickSound();
       const newBtn = savedGrid.querySelector(
         `[data-action='cycle-status'][data-id='${id}']`
       );
