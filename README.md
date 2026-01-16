@@ -2,6 +2,10 @@
 
 A single-page JavaScript web app that lets you **search manga** using the **Kitsu API** and save favorites into **My List** using **localStorage**.
 
+Manga Hub is a lightweight web app built for discovering and organizing manga. You can search for titles, browse quick categories, and explore featured picks to find something new. Each manga can be saved to a personal list and marked as Plan to Read, Reading, or Completed, so it’s easy to track your progress.
+
+The app is made to feel fast and simple, with clear results, easy navigation, and details that open without leaving the page. All manga data is fetched from the Kitsu API using read-only GET requests.
+
 ## Features
 - **Search + pagination**: Search manga and move pages with Prev/Next.
 - **Details panel**: Click a manga card to open a side panel with more info.

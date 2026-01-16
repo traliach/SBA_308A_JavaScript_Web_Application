@@ -1,3 +1,4 @@
+// Convert Kitsu API item into the shape we use in cards
 const toCardItem = (item) => {
   const attrs = item.attributes ?? {};
   const title = attrs.canonicalTitle ?? attrs.titles?.en ?? attrs.titles?.en_jp ?? "Untitled";
@@ -19,6 +20,7 @@ const toCardItem = (item) => {
   };
 };
 
+// Search manga (Kitsu uses offset pagination)
 export const searchManga = async ({ q, page = 1, limit = 9 }) => {
   const offset = (page - 1) * limit;
   const url =
@@ -37,6 +39,7 @@ export const searchManga = async ({ q, page = 1, limit = 9 }) => {
   };
 };
 
+// Get one manga with details + categories
 export const getMangaById = async (id) => {
   const url = `https://kitsu.io/api/edge/manga/${encodeURIComponent(id)}?include=categories`;
   const response = await fetch(url);
