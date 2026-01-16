@@ -3,6 +3,36 @@
   object-fit: cover;
 }
 
+body.bg-light {
+  background:
+    radial-gradient(900px 500px at 10% 0%, rgba(13, 110, 253, 0.10), transparent 60%),
+    radial-gradient(700px 420px at 90% 10%, rgba(255, 193, 7, 0.10), transparent 55%),
+    radial-gradient(800px 520px at 50% 100%, rgba(25, 135, 84, 0.08), transparent 60%),
+    linear-gradient(180deg, #f8f9fa 0%, #ffffff 50%, #f8f9fa 100%);
+  position: relative;
+}
+
+/* subtle manga-ish halftone */
+body.bg-light::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+  background-size: 18px 18px;
+  opacity: 0.25;
+  mask-image: radial-gradient(circle at 20% 10%, black 0%, transparent 55%);
+}
+
+.card {
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.12);
+}
+
 .loading-overlay {
   display: flex;
   justify-content: center;
