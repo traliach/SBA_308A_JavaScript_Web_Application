@@ -87,6 +87,42 @@ body.bg-light::before {
 .status-chip {
   border: 0;
   cursor: pointer;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  align-self: flex-start; /* prevent full-width stretch in flex column */
+  transition: transform 140ms ease, filter 140ms ease;
+}
+
+.status-chip:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.status-secondary {
+  background: #6c757d;
+  color: #fff;
+}
+
+.status-primary {
+  background: #0d6efd;
+  color: #fff;
+}
+
+.status-success {
+  background: #198754;
+  color: #fff;
+}
+
+.status-bump {
+  animation: statusBump 260ms ease;
+}
+
+@keyframes statusBump {
+  0% { transform: scale(1); }
+  55% { transform: scale(1.08); }
+  100% { transform: scale(1); }
 }
 
 /* Stronger "selected" styles */

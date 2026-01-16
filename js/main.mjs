@@ -225,6 +225,13 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
             ? "btn btn-sm btn-success mt-auto"
             : "btn btn-sm btn-outline-primary mt-auto";
 
+        const statusVariant =
+          item.status === "Completed"
+            ? "status-success"
+            : item.status === "Reading"
+              ? "status-primary"
+              : "status-secondary";
+
         return `
         <div class="col-12 col-sm-6 col-lg-4">
           <div class="card h-100 shadow-sm" data-manga-id="${item.id}">
@@ -234,7 +241,7 @@ const renderGrid = (grid, items, actionLabel, actionName) => {
               ${
                 item.status
                   ? actionName === "remove"
-                    ? `<button type="button" class="badge text-bg-secondary mb-2 status-chip" data-action="cycle-status" data-id="${item.id}">${item.status}</button>`
+                    ? `<button type="button" class="status-chip mb-2 ${statusVariant}" data-action="cycle-status" data-id="${item.id}" data-status="${item.status}">${item.status}</button>`
                     : `<span class="badge text-bg-secondary mb-2">${item.status}</span>`
                   : ""
               }
@@ -485,6 +492,15 @@ if (savedGrid) {
       setSavedList(state.saved);
       render();
       showStatus(`Status: ${nextStatus}`, "info");
+      const newBtn = savedGrid.querySelector(
+        `[data-action='cycle-status'][data-id='${id}']`
+      );
+      if (newBtn) {
+        newBtn.classList.remove("status-bump");
+        // force reflow so animation restarts
+        void newBtn.offsetWidth;
+        newBtn.classList.add("status-bump");
+      }
       return;
     }
 
